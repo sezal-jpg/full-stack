@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG Drawing Tool</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+        }
+
+        svg {
+            border: 2px solid black;
+            width: 80vw;
+            height: 60vh;
+            cursor: crosshair;
+        }
+
+        button, input {
+            margin: 10px;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>SVG Drawing Tool</h2>
+
+Color:
+<input type="color" id="color" value="#000000">
+
+<button onclick="undo()">Undo</button>
+
+<br>
+
+<svg id="canvas"
+     onmousedown="startDraw(evt)"
+     onmousemove="draw(evt)"
+     onmouseup="stopDraw()">
+</svg>
+
+<script>
+    let svg = document.getElementById("canvas");
+    let drawing = false;
+    let line;
+    let color = document.getElementById("color");
+
+    function startDraw(e) {
+        drawing = true;
+        line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+
+        line.setAttribute("x1", e.offsetX);
+        line.setAttribute("y1", e.offsetY);
+        line.setAttribute("x2", e.offsetX);
+        line.setAttribute("y2", e.offsetY);
+        line.setAttribute("stroke", color.value);
+        line.setAttribute("stroke-width", "2");
+
+        svg.appendChild(line);
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        line.setAttribute("x2", e.offsetX);
+        line.setAttribute("y2", e.offsetY);
+    }
+
+    function stopDraw() {
+        drawing = false;
+    }
+
+    function undo() {
+        if (svg.lastChild) {
+            svg.removeChild(svg.lastChild);
+        }
+    }
+</script>
+
+</body>
+</html>
