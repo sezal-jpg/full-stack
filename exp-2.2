@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dynamic Product Filter</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        select {
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Product List</h2>
+
+<select onchange="sortProducts(this.value)">
+    <option value="default">Sort By</option>
+    <option value="low">Price: Low to High</option>
+    <option value="high">Price: High to Low</option>
+</select>
+
+<div class="products" id="productList"></div>
+
+<script>
+    let products = [
+        { name: "Mobile", price: 12000 },
+        { name: "Laptop", price: 45000 },
+        { name: "Headphones", price: 2000 },
+        { name: "Keyboard", price: 1500 }
+    ];
+
+    function displayProducts() {
+        let list = document.getElementById("productList");
+        list.innerHTML = "";
+
+        products.forEach(p => {
+            list.innerHTML += `
+                <div class="card">
+                    <h4>${p.name}</h4>
+                    <p>₹${p.price}</p>
+                </div>
+            `;
+        });
+    }
+
+    function sortProducts(type) {
+        if (type === "low") {
+            products.sort((a, b) => a.price - b.price);
+        } 
+        else if (type === "high") {
+            products.sort((a, b) => b.price - a.price);
+        }
+        displayProducts();
+    }
+
+    displayProducts();
+</script>
+
+</body>
+</html>
