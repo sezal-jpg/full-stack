@@ -1,0 +1,563 @@
+import React from 'react';
+import './ProductCard.css';
+
+/**
+ * ProductCard Component
+ * 
+ * A reusable product card component that displays product information
+ * with dynamic data through props and visual stock status indicators.
+ * 
+ * Props:
+ * @param {string} image - URL of the product image
+ * @param {string} name - Name of the product
+ * @param {string} description - Brief description of the product
+ * @param {number} price - Product price
+ * @param {string} currency - Currency symbol (default: '$')
+ * @param {number} stock - Available stock quantity
+ * @param {string} category - Product category
+ * @param {number} rating - Product rating (0-5)
+ * @param {function} onAddToCart - Callback function when Add to Cart is clicked
+ */
+
+const ProductCard = ({
+  image,
+  name,
+  description,
+  price,
+  currency = '$',
+  stock,
+  category,
+  rating = 0,
+  onAddToCart
+}) => {
+  // Determine stock status
+  const getStockStatus = () => {
+    if (stock === 0) return { text: 'Out of Stock', class: 'out-of-stock' };
+    if (stock < 5) return { text: 'Low Stock', class: 'low-stock' };
+    return { text: 'In Stock', class: 'in-stock' };
+  };
+
+  const stockStatus = getStockStatus();
+
+  // Render star rating
+  const renderStars = () => {
+    return (
+      <div className="rating">
+        {[...Array(5)].map((_, index) => (
+          <span
+            key={index}
+            className={`star ${index < rating ? 'filled' : ''}`}
+          >
+            ★
+          </span>
+        ))}
+        <span className="rating-value">({rating.toFixed(1)})</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="product-card">
+      {/* Product Image */}
+      <div className="product-image-container">
+        <img src={image} alt={name} className="product-image" />
+        {category && <span className="category-badge">{category}</span>}
+        <span className={`stock-badge ${stockStatus.class}`}>
+          {stockStatus.text}
+        </span>
+      </div>
+
+      {/* Product Details */}
+      <div className="product-details">
+        <h3 className="product-name">{name}</h3>
+        <p className="product-description">{description}</p>
+
+        {/* Rating */}
+        {renderStars()}
+
+        {/* Price and Stock Info */}
+        <div className="product-footer">
+          <div className="price-section">
+            <span className="price">
+              {currency}{price.toFixed(2)}
+            </span>
+            <span className="stock-count">
+              {stock > 0 ? `${stock} available` : 'Unavailable'}
+            </span>
+          </div>
+
+          {/* Add to Cart Button */}
+          <button
+            className="add-to-cart-btn"
+            onClick={onAddToCart}
+            disabled={stock === 0}
+          >
+            {stock === 0 ? 'Sold Out' : 'Add to Cart'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;
+/* ProductCard.css - Modern, Responsive Styling */
+
+.product-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-width: 350px;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Product Image Section */
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* Category Badge */
+.category-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stock Badge */
+.stock-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stock-badge.in-stock {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.stock-badge.low-stock {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.stock-badge.out-of-stock {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* Product Details Section */
+.product-details {
+  padding: 20px;
+}
+
+.product-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Rating Section */
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.star {
+  color: #d1d5db;
+  font-size: 18px;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.rating-value {
+  font-size: 14px;
+  color: #6b7280;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+/* Product Footer */
+.product-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.stock-count {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Add to Cart Button */
+.add-to-cart-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.add-to-cart-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+.add-to-cart-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.add-to-cart-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .product-card {
+    max-width: 100%;
+  }
+
+  .product-image-container {
+    height: 240px;
+  }
+
+  .product-name {
+    font-size: 18px;
+  }
+
+  .price {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-image-container {
+    height: 200px;
+  }
+
+  .product-details {
+    padding: 16px;
+  }
+
+  .product-name {
+    font-size: 16px;
+  }
+
+  .price {
+    font-size: 22px;
+  }
+
+  .add-to-cart-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+import React from 'react';
+import ProductCard from './ProductCard';
+import './App.css';
+
+/**
+ * Example App Component
+ * Demonstrates how to use the ProductCard component with different props
+ */
+
+function App() {
+  // Sample product data
+  const products = [
+    {
+      id: 1,
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
+      name: 'Wireless Headphones Pro',
+      description: 'Premium noise-cancelling headphones with 30-hour battery life and crystal-clear sound quality.',
+      price: 299.99,
+      currency: '$',
+      stock: 15,
+      category: 'Electronics',
+      rating: 4.5
+    },
+    {
+      id: 2,
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
+      name: 'Smart Watch Ultra',
+      description: 'Advanced fitness tracking, heart rate monitoring, and seamless smartphone integration.',
+      price: 449.99,
+      currency: '$',
+      stock: 3,
+      category: 'Wearables',
+      rating: 4.8
+    },
+    {
+      id: 3,
+      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&h=500&fit=crop',
+      name: 'Designer Sunglasses',
+      description: 'Stylish UV-protected sunglasses with polarized lenses and premium frame.',
+      price: 189.99,
+      currency: '$',
+      stock: 0,
+      category: 'Fashion',
+      rating: 4.2
+    },
+    {
+      id: 4,
+      image: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=500&h=500&fit=crop',
+      name: 'Leather Sneakers',
+      description: 'Handcrafted premium leather sneakers with exceptional comfort and durability.',
+      price: 149.99,
+      currency: '$',
+      stock: 28,
+      category: 'Footwear',
+      rating: 4.6
+    }
+  ];
+
+  // Handler for Add to Cart button
+  const handleAddToCart = (product) => {
+    console.log('Added to cart:', product);
+    alert(`${product.name} added to cart!`);
+  };
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>Product Showcase</h1>
+        <p>Reusable ProductCard Component Demo</p>
+      </header>
+
+      <div className="products-grid">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            image={product.image}
+            name={product.name}
+            description={product.description}
+            price={product.price}
+            currency={product.currency}
+            stock={product.stock}
+            category={product.category}
+            rating={product.rating}
+            onAddToCart={() => handleAddToCart(product)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+/* App.css - Demo Application Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 50px;
+  color: #ffffff;
+}
+
+.app-header h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-header p {
+  font-size: 18px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 350px));
+  gap: 30px;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app {
+    padding: 30px 16px;
+  }
+
+  .app-header h1 {
+    font-size: 32px;
+  }
+
+  .app-header p {
+    font-size: 16px;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 20px 12px;
+  }
+
+  .app-header {
+    margin-bottom: 30px;
+  }
+
+  .app-header h1 {
+    font-size: 28px;
+  }
+}
+
+import ProductCard from './ProductCard';
+
+function App() {
+  return (
+    <ProductCard
+      image="https://example.com/product.jpg"
+      name="Wireless Headphones"
+      description="Premium sound quality"
+      price={299.99}
+      stock={15}
+      category="Electronics"
+      rating={4.5}
+      onAddToCart={() => console.log('Added to cart')}
+    />
+  );
+}
+```
+
+const products = [
+  {
+    id: 1,
+    image: 'url1.jpg',
+    name: 'Product 1',
+    // ... other props
+  },
+  // ... more products
+];
+
+function App() {
+  return (
+    <div className="products-grid">
+      {products.map(product => (
+        <ProductCard key={product.id} {...product} />
+      ))}
+    </div>
+  );
+}
+
+
+
+/* Change primary gradient colors */
+.add-to-cart-btn {
+  background: linear-gradient(135deg, #your-color-1, #your-color-2);
+}
+
+/* Adjust card width */
+.product-card {
+  max-width: 400px; /* Default: 350px */
+}
+
+
+
+
