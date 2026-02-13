@@ -1,0 +1,484 @@
+npm create vite@latest library-management
+cd library-management
+npm install
+npm run dev
+import { useState } from "react";
+import "./App.css";
+
+function App() {
+  const [books, setBooks] = useState([
+    { id: 1, title: "Atomic Habits", author: "James Clear" },
+    { id: 2, title: "The Alchemist", author: "Paulo Coelho" },
+    { id: 3, title: "Ikigai", author: "Héctor García" },
+  ]);
+
+  const [search, setSearch] = useState("");
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+
+  const addBook = () => {
+    if (!title || !author) return;
+
+    setBooks([
+      ...books,
+      { id: Date.now(), title, author },
+    ]);
+
+    setTitle("");
+    setAuthor("");
+  };
+
+  const removeBook = (id) => {
+    setBooks(books.filter((book) => book.id !== id));
+  };
+
+  const filteredBooks = books.filter(
+    (book) =>
+      book.title.toLowerCase().includes(search.toLowerCase()) ||
+      book.author.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="library-container">
+      <h1>Library Management</h1>
+
+      {/* Search */}
+      <input
+        className="search"
+        placeholder="Search book..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {/* Add book */}
+      <div className="add-book">
+        <input
+          placeholder="Book title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          placeholder="Author"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+        />
+        <button onClick={addBook}>Add</button>
+      </div>
+
+      {/* Book list */}
+      <div className="book-list">
+        {filteredBooks.map((book) => (
+          <div className="book-card" key={book.id}>
+            <h3>{book.title}</h3>
+            <p>{book.author}</p>
+            <button
+              className="remove-btn"
+              onClick={() => removeBook(book.id)}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+Library.jsx
+import BookCard from "./BookCard";
+import "./Library.css";
+
+export default function Library() {
+  return (
+    <div className="library-container">
+      <h1>📚 Library Management System</h1>
+
+      <div className="book-grid">
+        <BookCard title="The Great Gatsby" author="F. Scott Fitzgerald" />
+        <BookCard title="To Kill a Mockingbird" author="Harper Lee" />
+        <BookCard title="Atomic Habits" author="James Clear" />
+      </div>
+    </div>
+  );
+}
+import { useState } from "react";
+
+export default function AddBook({ onAdd }) {
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+
+  const handleAdd = () => {
+    if (!title || !author) return;
+    onAdd({ title, author });
+    setTitle("");
+    setAuthor("");
+  };
+
+  return (
+    <div className="add-book">
+      <input
+        placeholder="Book Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <input
+        placeholder="Author"
+        value={author}
+        onChange={(e) => setAuthor(e.target.value)}
+      />
+      <button onClick={handleAdd}>Add Book</button>
+    </div>
+  );
+}
+ad—
+import { useState } from "react";
+
+export default function AddBook({ onAdd }) {
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+
+  const handleAdd = () => {
+    if (!title || !author) return;
+    onAdd({ title, author });
+    setTitle("");
+    setAuthor("");
+  };
+
+  return (
+    <div className="add-book">
+      <input
+        placeholder="Book Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <input
+        placeholder="Author"
+        value={author}
+        onChange={(e) => setAuthor(e.target.value)}
+      />
+      <button onClick={handleAdd}>Add Book</button>
+    </div>
+  );
+}
+function BookCard({ book, removeBook }) {
+  return (
+    <div className="book-card">
+      <h3>{book.title}</h3>
+      <p>{book.author}</p>
+
+      <button
+        className="remove-btn"
+        onClick={() => removeBook(book.id)}
+      >
+        Remove
+      </button>
+    </div>
+  );
+}
+
+export default BookCard;
+import BookCard from "../components/BookCard";
+
+function Books({ books, removeBook }) {
+  return (
+    <div className="book-list">
+      {books.map((book) => (
+        <BookCard
+          key={book.id}
+          book={book}
+          removeBook={removeBook}
+        />
+      ))}
+    </div>
+  );
+}
+
+export default Books;
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+}
+
+.library-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.search {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.add-book {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-book input {
+  padding: 8px;
+  flex: 1;
+}
+
+.add-book button {
+  padding: 8px 14px;
+}
+
+.book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.book-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.remove-btn {
+  margin-top: 10px;
+  background: black;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+import { useState } from "react";
+import "./App.css";
+
+function App() {
+  const [books, setBooks] = useState([
+    { id: 1, title: "Atomic Habits", author: "James Clear" },
+    { id: 2, title: "The Alchemist", author: "Paulo Coelho" },
+    { id: 3, title: "Ikigai", author: "Héctor García" },
+  ]);
+
+  const [search, setSearch] = useState("");
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+
+  const addBook = () => {
+    if (!title || !author) return;
+
+    setBooks([
+      ...books,
+      { id: Date.now(), title, author },
+    ]);
+
+    setTitle("");
+    setAuthor("");
+  };
+
+  const removeBook = (id) => {
+    setBooks(books.filter((book) => book.id !== id));
+  };
+
+  const filteredBooks = books.filter(
+    (book) =>
+      book.title.toLowerCase().includes(search.toLowerCase()) ||
+      book.author.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="library-container">
+      <h1>Library Management</h1>
+
+      {/* Search */}
+      <input
+        className="search"
+        placeholder="Search book..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {/* Add book */}
+      <div className="add-book">
+        <input
+          placeholder="Book title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          placeholder="Author"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+        />
+        <button onClick={addBook}>Add</button>
+      </div>
+
+      {/* Book list */}
+      <div className="book-list">
+        {filteredBooks.map((book) => (
+          <div className="book-card" key={book.id}>
+            <h3>{book.title}</h3>
+            <p>{book.author}</p>
+            <button
+              className="remove-btn"
+              onClick={() => removeBook(book.id)}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./App.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <App />
+);
+cd library-management
+npm install
+npm run dev
