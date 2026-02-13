@@ -1,0 +1,219 @@
+npm create vite@latest personclasshierarchy
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f4f6f8;
+  margin: 0;
+}
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 10px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.name {
+  font-size: 18px;
+}
+
+.role {
+  color: #555;
+}
+
+.greet {
+  font-style: italic;
+  color: #333;
+  margin-bottom: 10px;
+}
+import "./App.css";
+
+/* ===== CLASS HIERARCHY ===== */
+class Person {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  greet() {
+    return `Hello, my name is ${this.name} and I am ${this.age} years old.`;
+  }
+}
+
+class Student extends Person {
+  constructor(name, age, major) {
+    super(name, age);
+    this.role = "Student";
+    this.major = major;
+  }
+}
+
+class Teacher extends Person {
+  constructor(name, age, subject) {
+    super(name, age);
+    this.role = "Teacher";
+    this.subject = subject;
+  }
+}
+
+/* ===== DATA ===== */
+const people = [
+  new Student("Aastha", 21, "Computer Science"),
+  new Teacher("Dr. Sharma", 45, "Data Structures"),
+];
+
+/* ===== UI ===== */
+function App() {
+  return (
+    <div className="container">
+      <h1>Person Class Hierarchy</h1>
+
+      {people.map((person, index) => (
+        <div className="card" key={index}>
+          <div className="card-header">
+            <span className="name">{person.name}</span>
+            <span className="role">{person.role}</span>
+          </div>
+
+          <p className="greet">{person.greet()}</p>
+
+          {person.role === "Student" && (
+            <p><strong>Major:</strong> {person.major}</p>
+          )}
+
+          {person.role === "Teacher" && (
+            <p><strong>Subject:</strong> {person.subject}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default App;
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+export class Person {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+    this.role = "Person";
+  }
+
+  greet() {
+    return `${this.name} (${this.role})`;
+  }
+}
+
+export class Student extends Person {
+  constructor(name, age, major) {
+    super(name, age);
+    this.major = major;
+    this.role = "Student";
+  }
+}
+
+export class Teacher extends Person {
+  constructor(name, age, subject) {
+    super(name, age);
+    this.subject = subject;
+    this.role = "Teacher";
+  }
+}
