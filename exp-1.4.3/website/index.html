@@ -4,77 +4,168 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Redis Lock — Booking API</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
   <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #141416;
+      --border: #222226;
+      --accent: #ff4d4d;
+      --accent2: #ff8c42;
+      --text: #e8e8e4;
+      --muted: #555560;
+      --green: #3ddc84;
+      --yellow: #f5c842;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #f5f5f0; font-family: 'JetBrains Mono', monospace; display: flex; flex-direction: column; min-height: 100vh; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient glow background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(255,77,77,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
     nav {
+      position: relative;
+      z-index: 10;
       padding: 20px 40px;
-      border-bottom: 1px solid #e0e0d8;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 1px solid var(--border);
     }
 
-    .logo { font-size: 13px; letter-spacing: 0.15em; color: #c0392b; text-transform: uppercase; }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-    .status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #999; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; animation: pulse 2s infinite; }
-    .dot.online { background: #27ae60; }
-    .dot.offline { background: #e74c3c; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .logo-icon {
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    .dot.offline { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
 
     main {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 60px 40px;
+      position: relative;
+      z-index: 1;
     }
 
-    .card {
-      background: white;
-      border: 1px solid #e0e0d8;
+    .wrapper {
       width: 100%;
-      max-width: 520px;
+      max-width: 500px;
     }
 
-    .card-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #e0e0d8;
+    /* Top label */
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 30px;
+      line-height: 1.1;
+    }
+
+    /* URL strip */
+    .url-strip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      padding: 10px 16px;
+      font-size: 10px;
+      color: var(--muted);
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 6px;
+      letter-spacing: 0.05em;
     }
 
-    .card-title { font-size: 12px; color: #1a1a1a; letter-spacing: 0.1em; text-transform: uppercase; }
-
-    .method-badge {
-      background: #c0392b;
+    .url-strip .method {
+      background: var(--accent);
       color: white;
-      font-size: 10px;
-      padding: 3px 10px;
-      letter-spacing: 0.1em;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 8px;
+      letter-spacing: 0.12em;
+      flex-shrink: 0;
     }
 
-    .url-bar {
-      padding: 16px 24px;
-      border-bottom: 1px solid #e0e0d8;
-      font-size: 12px;
-      color: #777;
-      background: #fafaf8;
-      word-break: break-all;
+    .url-strip .endpoint { color: #888; }
+    .url-strip .seat-seg { color: var(--accent2); font-weight: 700; }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 28px;
     }
 
-    .url-bar span { color: #1a1a1a; }
-    .url-bar .seat-highlight { color: #c0392b; font-weight: 700; }
-
-    .card-body { padding: 24px; }
-
-    .input-label {
+    .field-label {
       font-size: 10px;
-      color: #aaa;
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.2em;
       margin-bottom: 8px;
@@ -82,68 +173,134 @@
 
     .seat-input {
       width: 100%;
-      border: 1px solid #e0e0d8;
-      background: #fafaf8;
-      padding: 12px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: #1a1a1a;
-      margin-bottom: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      padding: 14px 18px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 20px;
+      -moz-appearance: textfield;
     }
+    .seat-input::-webkit-inner-spin-button,
+    .seat-input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
-    .seat-input:focus { border-color: #c0392b; }
+    .seat-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,77,77,0.1);
+    }
 
     .book-btn {
       width: 100%;
-      background: #1a1a1a;
+      background: var(--accent);
       color: white;
       border: none;
-      padding: 14px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      padding: 15px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: background 0.2s;
-      margin-bottom: 20px;
+      transition: background 0.15s, transform 0.1s;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
-    .book-btn:hover { background: #c0392b; }
-    .book-btn:disabled { background: #ccc; cursor: not-allowed; }
-
-    .response-label {
-      font-size: 10px;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      margin-bottom: 8px;
+    .book-btn:hover:not(:disabled) {
+      background: #e63535;
+    }
+    .book-btn:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+    .book-btn:disabled {
+      background: #2a2a2e;
+      color: var(--muted);
+      cursor: not-allowed;
     }
 
+    .btn-arrow {
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+    .book-btn:hover .btn-arrow { transform: translateX(4px); }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-label { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+
+    /* Response box */
     #response-box {
-      background: #1a1a1a;
-      color: #27ae60;
-      font-size: 12px;
-      padding: 16px;
-      min-height: 90px;
+      background: #0a0a0c;
+      border: 1px solid var(--border);
+      padding: 16px 18px;
+      font-size: 11px;
+      line-height: 1.9;
+      min-height: 100px;
       white-space: pre-wrap;
-      line-height: 1.8;
+      color: var(--muted);
+      position: relative;
+      overflow: hidden;
     }
+
+    #response-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+
+    #response-box.success::before { background: var(--green); }
+    #response-box.error::before { background: var(--accent); }
+    #response-box.warning::before { background: var(--yellow); }
 
     footer {
+      position: relative;
+      z-index: 10;
       padding: 20px 40px;
-      border-top: 1px solid #e0e0d8;
-      text-align: center;
-      font-size: 11px;
-      color: #bbb;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .footer-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-tag span {
+      background: var(--border);
+      padding: 2px 8px;
+      font-size: 9px;
+      letter-spacing: 0.15em;
     }
   </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo">RedisLock</div>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    RedisLock
+  </div>
   <div class="status">
     <div class="dot" id="dot"></div>
     <span id="status-text">checking...</span>
@@ -151,64 +308,94 @@
 </nav>
 
 <main>
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Book a Seat</span>
-      <span class="method-badge">POST</span>
+  <div class="wrapper">
+    <div class="eyebrow">Booking API</div>
+    <div class="page-title">Reserve a Seat</div>
+
+    <div class="url-strip">
+      <span class="method">POST</span>
+      <span class="endpoint">fullstack-sezal-code.railway.app/api/book/<span class="seat-seg" id="url-seat">1</span></span>
     </div>
-    <div class="url-bar">
-      <span>https://fullstack-sezal-code.railway.app</span>/api/book/<span class="seat-highlight" id="url-seat">1</span>
-    </div>
-    <div class="card-body">
-      <div class="input-label">Seat ID</div>
+
+    <div class="card">
+      <div class="field-label">Seat ID</div>
       <input
         class="seat-input"
         id="seat-input"
         type="number"
         value="1"
         min="1"
-        placeholder="Enter seat number..."
+        placeholder="e.g. 42"
         oninput="document.getElementById('url-seat').textContent = this.value || '?'"
       />
-      <button class="book-btn" id="book-btn" onclick="bookSeat()">Send Request</button>
-      <div class="response-label">Response</div>
+
+      <button class="book-btn" id="book-btn" onclick="bookSeat()">
+        Send Request <span class="btn-arrow">→</span>
+      </button>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-label">Response</div>
+        <div class="divider-line"></div>
+      </div>
+
       <div id="response-box">// Enter a seat number and press "Send Request"</div>
     </div>
   </div>
 </main>
 
-<footer>redis-locking-mechanism · exp 4.3</footer>
+<footer>
+  <div class="footer-tag">
+    redis-locking-mechanism
+    <span>exp 4.3</span>
+  </div>
+  <div>distributed lock system</div>
+</footer>
 
 <script>
   const BASE = 'https://fullstack-production-4c04.up.railway.app';
 
   async function bookSeat() {
     const seatId = document.getElementById('seat-input').value;
+    const box = document.getElementById('response-box');
     if (!seatId) {
-      document.getElementById('response-box').style.color = '#e74c3c';
-      document.getElementById('response-box').textContent = '// Error: Please enter a seat number';
+      box.className = 'error';
+      box.style.color = '#ff4d4d';
+      box.textContent = '// Error: Please enter a seat number';
       return;
     }
-    const box = document.getElementById('response-box');
     const btn = document.getElementById('book-btn');
     btn.disabled = true;
-    btn.textContent = 'Sending...';
-    box.style.color = '#f39c12';
+    btn.innerHTML = 'Sending... <span class="btn-arrow">↻</span>';
+    box.className = '';
+    box.style.color = '#555560';
     box.textContent = '// loading...';
+
     const t = Date.now();
     try {
       const res = await fetch(`${BASE}/api/book/${seatId}`, { method: 'POST' });
       const ms = Date.now() - t;
       let body = '';
       try { body = JSON.stringify(await res.json(), null, 2); } catch { body = await res.text(); }
-      box.style.color = res.status === 200 ? '#27ae60' : res.status === 423 ? '#f39c12' : '#e74c3c';
+
+      if (res.status === 200) {
+        box.className = 'success';
+        box.style.color = '#3ddc84';
+      } else if (res.status === 423) {
+        box.className = 'warning';
+        box.style.color = '#f5c842';
+      } else {
+        box.className = 'error';
+        box.style.color = '#ff4d4d';
+      }
       box.textContent = `HTTP ${res.status}  ·  ${ms}ms\n\n${body || '(empty)'}`;
     } catch (e) {
-      box.style.color = '#e74c3c';
+      box.className = 'error';
+      box.style.color = '#ff4d4d';
       box.textContent = `Error: ${e.message}`;
     }
     btn.disabled = false;
-    btn.textContent = 'Send Request';
+    btn.innerHTML = 'Send Request <span class="btn-arrow">→</span>';
   }
 
   async function checkStatus() {
@@ -218,11 +405,11 @@
       await fetch(BASE + '/', { signal: AbortSignal.timeout(4000) });
       dot.className = 'dot online';
       el.textContent = 'API Online';
-      el.style.color = '#27ae60';
+      el.style.color = '#3ddc84';
     } catch {
       dot.className = 'dot offline';
       el.textContent = 'API Offline';
-      el.style.color = '#e74c3c';
+      el.style.color = '#ff4d4d';
     }
   }
 
