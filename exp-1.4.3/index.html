@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Redis Lock — Booking API</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #f5f5f0; font-family: 'JetBrains Mono', monospace; display: flex; flex-direction: column; min-height: 100vh; }
+
+    nav {
+      padding: 20px 40px;
+      border-bottom: 1px solid #e0e0d8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo { font-size: 13px; letter-spacing: 0.15em; color: #c0392b; text-transform: uppercase; }
+
+    .status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #999; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; animation: pulse 2s infinite; }
+    .dot.online { background: #27ae60; }
+    .dot.offline { background: #e74c3c; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e0e0d8;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0d8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title { font-size: 12px; color: #1a1a1a; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .method-badge {
+      background: #c0392b;
+      color: white;
+      font-size: 10px;
+      padding: 3px 10px;
+      letter-spacing: 0.1em;
+    }
+
+    .url-bar {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e0e0d8;
+      font-size: 12px;
+      color: #777;
+      background: #fafaf8;
+      word-break: break-all;
+    }
+
+    .url-bar span { color: #1a1a1a; }
+    .url-bar .seat-highlight { color: #c0392b; font-weight: 700; }
+
+    .card-body { padding: 24px; }
+
+    .input-label {
+      font-size: 10px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 8px;
+    }
+
+    .seat-input {
+      width: 100%;
+      border: 1px solid #e0e0d8;
+      background: #fafaf8;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .seat-input:focus { border-color: #c0392b; }
+
+    .book-btn {
+      width: 100%;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 20px;
+    }
+
+    .book-btn:hover { background: #c0392b; }
+    .book-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .response-label {
+      font-size: 10px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 8px;
+    }
+
+    #response-box {
+      background: #1a1a1a;
+      color: #27ae60;
+      font-size: 12px;
+      padding: 16px;
+      min-height: 90px;
+      white-space: pre-wrap;
+      line-height: 1.8;
+    }
+
+    footer {
+      padding: 20px 40px;
+      border-top: 1px solid #e0e0d8;
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">RedisLock</div>
+  <div class="status">
+    <div class="dot" id="dot"></div>
+    <span id="status-text">checking...</span>
+  </div>
+</nav>
+
+<main>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Book a Seat</span>
+      <span class="method-badge">POST</span>
+    </div>
+    <div class="url-bar">
+      <span>https://fullstack-production-4c04.up.railway.app</span>/api/book/<span class="seat-highlight" id="url-seat">1</span>
+    </div>
+    <div class="card-body">
+      <div class="input-label">Seat ID</div>
+      <input
+        class="seat-input"
+        id="seat-input"
+        type="number"
+        value="1"
+        min="1"
+        placeholder="Enter seat number..."
+        oninput="document.getElementById('url-seat').textContent = this.value || '?'"
+      />
+      <button class="book-btn" id="book-btn" onclick="bookSeat()">Send Request</button>
+      <div class="response-label">Response</div>
+      <div id="response-box">// Enter a seat number and press "Send Request"</div>
+    </div>
+  </div>
+</main>
+
+<footer>redis-locking-mechanism · exp 4.3</footer>
+
+<script>
+  const BASE = 'https://fullstack-production-4c04.up.railway.app';
+
+  async function bookSeat() {
+    const seatId = document.getElementById('seat-input').value;
+    if (!seatId) {
+      document.getElementById('response-box').style.color = '#e74c3c';
+      document.getElementById('response-box').textContent = '// Error: Please enter a seat number';
+      return;
+    }
+    const box = document.getElementById('response-box');
+    const btn = document.getElementById('book-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    box.style.color = '#f39c12';
+    box.textContent = '// loading...';
+    const t = Date.now();
+    try {
+      const res = await fetch(`${BASE}/api/book/${seatId}`, { method: 'POST' });
+      const ms = Date.now() - t;
+      let body = '';
+      try { body = JSON.stringify(await res.json(), null, 2); } catch { body = await res.text(); }
+      box.style.color = res.status === 200 ? '#27ae60' : res.status === 423 ? '#f39c12' : '#e74c3c';
+      box.textContent = `HTTP ${res.status}  ·  ${ms}ms\n\n${body || '(empty)'}`;
+    } catch (e) {
+      box.style.color = '#e74c3c';
+      box.textContent = `Error: ${e.message}`;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Send Request';
+  }
+
+  async function checkStatus() {
+    const dot = document.getElementById('dot');
+    const el = document.getElementById('status-text');
+    try {
+      await fetch(BASE + '/', { signal: AbortSignal.timeout(4000) });
+      dot.className = 'dot online';
+      el.textContent = 'API Online';
+      el.style.color = '#27ae60';
+    } catch {
+      dot.className = 'dot offline';
+      el.textContent = 'API Offline';
+      el.style.color = '#e74c3c';
+    }
+  }
+
+  checkStatus();
+</script>
+</body>
+</html>
