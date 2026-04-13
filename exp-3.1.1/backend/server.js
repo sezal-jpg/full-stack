@@ -10,7 +10,23 @@ const protectedRoutes = require('./routes/protected');
 const app = express();
 
 // allow requests from the React dev server
-app.use(cors({ origin: 'http://localhost:5173' }));
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://full-stack-mwpa.vercel.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 // connect to MongoDB for RBAC user storage
